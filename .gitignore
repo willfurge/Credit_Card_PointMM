@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Data files
+data/raw/
+data/processed/
+*.csv
+*.parquet
+*.xlsx
+*.json
+
+# Logs
+*.log
+
+# VS Code
+.vscode/
+
+# Environment & credentials
+.env
+*.key
+*.pem
+
+# OS-specific
+.DS_Store
+Thumbs.db

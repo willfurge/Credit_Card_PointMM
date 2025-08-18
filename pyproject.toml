@@ -1,0 +1,20 @@
+[tool.black]
+line-length = 100
+target-version = ["py311","py312","py313"]
+extend-exclude = "data|.venv|build|dist"
+
+[tool.isort]
+profile = "black"
+line_length = 100
+src_paths = ["src", "tests"]
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
+exclude = [".venv", "data", "build", "dist", "__pycache__", ".git"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-q --disable-warnings --maxfail=1"
+testpaths = ["tests"]
+pythonpath = ["."]
