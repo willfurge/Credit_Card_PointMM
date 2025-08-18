@@ -1,6 +1,7 @@
 # Core
 pandas>=2.0.0
 numpy>=1.25.0
+dotenv
 
 # Data fetching & APIs
 requests>=2.31.0

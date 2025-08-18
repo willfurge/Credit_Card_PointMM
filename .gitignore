@@ -1,9 +1,12 @@
-# Byte-compiled / optimized / DLL files
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-*.pkl
 *.egg
 *.egg-info/
 dist/
@@ -18,25 +21,20 @@ ENV/
 # Jupyter
 .ipynb_checkpoints/
 
-# Data & artifacts
+# Data & artifacts (adjust if you keep sample data)
 data/
-**/data/
-**/logs/
+logs/
 *.log
 *.csv
 *.parquet
 *.xlsx
 *.json
 
-# Environment & credentials
+# Env & credentials
 .env
 *.key
 *.pem
 
-# IDE / Editor
+# IDE
 .vscode/
 .idea/
-
-# OS-specific
-.DS_Store
-Thumbs.db

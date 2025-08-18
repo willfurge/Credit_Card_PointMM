@@ -15,6 +15,6 @@ This project implements a market-making bot that simulates internal credit card 
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/<your-username>/Credit_Card_PointMM.git
+git clone https://github.com/willfurge/Credit_Card_PointMM.git
 cd Credit_Card_PointMM
 pip install -r requirements.txt
