@@ -1,4 +1,4 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *.pyo
@@ -16,26 +16,26 @@ venv/
 ENV/
 
 # Jupyter
-.ipynb_checkpoints
+.ipynb_checkpoints/
 
-# Data files
-data/raw/
-data/processed/
+# Data & artifacts
+data/
+**/data/
+**/logs/
+*.log
 *.csv
 *.parquet
 *.xlsx
 *.json
 
-# Logs
-*.log
-
-# VS Code
-.vscode/
-
 # Environment & credentials
 .env
 *.key
 *.pem
+
+# IDE / Editor
+.vscode/
+.idea/
 
 # OS-specific
 .DS_Store
