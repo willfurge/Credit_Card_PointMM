@@ -1,0 +1,87 @@
+CONFIG_LOADER.PY — LOGIC & TEST DOCS (TEXT)
+
+Purpose
+-------
+`config_loader.py` provides a single, predictable way to load configuration
+from a file (JSON by default) and override values with environment variables.
+It supports:
+- Nested key overrides via ENV_PREFIX + double underscores (SECTION__SUBKEY)
+- Type coercion via an optional `schema` map
+- Required key validation with explicit errors
+- Bool/number normalization from strings
+
+Public API (intended)
+---------------------
+load_config(
+    path: str,
+    *,
+    env_prefix: str | None = None,
+    schema: dict[str, type] | None = None,
+    required_keys: list[str] | None = None,
+) -> dict
+
+Behavior
+--------
+- Reads config from `path` (JSON).
+- If `env_prefix` is provided, walks os.environ for keys starting with it.
+  Double underscores `__` split nested paths:
+    APP_DB__HOST=localhost  -> {"db": {"host": "localhost"}}
+- If `schema` is provided, casts values by dotted path, e.g. {"k.i": int, "k.f": float, "k.b": bool}.
+  Booleans accept case-insensitive true/false/1/0/yes/no.
+- If `required_keys` is provided, raises ValueError (or KeyError) if any dotted path
+  is missing after file load + env overrides.
+- Returns a plain dict (no custom types).
+
+Edge Cases & Guarantees
+-----------------------
+- Missing file -> FileNotFoundError.
+- Malformed JSON -> ValueError (json.JSONDecodeError).
+- Env override for a non-existent branch creates it.
+- Casting failures -> ValueError with offending dotted key path.
+- Keys are case-sensitive in file. Booleans are case-insensitive during cast.
+
+Examples
+--------
+# config.json: {"db":{"host":"file_host","port":5432},"feature":{"on":false}}
+APP_DB__HOST="env_host"
+APP_FEATURE__ON="True"
+
+cfg = load_config(
+    "config.json",
+    env_prefix="APP_",
+    schema={"db.port": int, "feature.on": bool},
+    required_keys=["db.host", "db.port"],
+)
+# -> {"db":{"host":"env_host","port":5432},"feature":{"on":True}}
+
+Test Plan
+---------
+Unit Test Matrix:
+- Basic load:
+  - Valid JSON file -> returns dict matching file.
+- Env override:
+  - APP_DB__HOST overrides db.host -> env value wins.
+- Env creation:
+  - Override creates new nested key -> key present with value.
+- Bool casting:
+  - "true"/"False"/"0"/"yes" -> correct boolean parsing.
+- Numeric casting:
+  - Int/float strings -> correctly typed numbers.
+- Schema miss/cast error:
+  - Uncastable value for typed key -> ValueError with dotted key.
+- Required keys:
+  - Missing after merge -> ValueError or KeyError.
+- JSON error:
+  - Malformed file -> ValueError.
+- Missing file:
+  - Nonexistent path -> FileNotFoundError.
+
+Suggested Test Files:
+- tests/test_config_loader.py (core basics)
+- tests/test_config_loader_hardening.py (env precedence, casting, required-key checks)
+
+Static/Typing Notes
+-------------------
+- Prefer explicit return type dict[str, Any] if using mypy.
+- Keep boolean parsing centralized to avoid inconsistencies.
+- Document dotted-path behavior in module docstring.

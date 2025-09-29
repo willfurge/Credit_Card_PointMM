@@ -1,0 +1,47 @@
+LOGGER.PY — LOGIC DOCS (TEXT)
+
+Purpose
+-------
+Centralize application logging with idempotent setup (no duplicate handlers)
+and consistent formatting across console/file outputs.
+
+Public API (intended)
+---------------------
+get_logger(
+    name: str = "app",
+    *,
+    level: int | str = "INFO",
+    log_file: str | None = None,
+    propagate: bool = False,
+    fmt: str | None = None,
+    datefmt: str | None = None,
+) -> logging.Logger
+
+Behavior
+--------
+- Creates or returns a named logging.Logger.
+- Converts level strings (e.g., "INFO") to numeric levels.
+- Adds a single handler per sink:
+  - Console (StreamHandler) always.
+  - FileHandler if `log_file` is provided.
+- Idempotent: repeated get_logger("same_name", ...) calls do not reattach handlers.
+- Default format includes timestamp, level name, logger name, and message.
+- propagate=False by default to prevent duplicate parent emissions.
+
+Edge Cases & Guarantees
+-----------------------
+- Invalid level string -> ValueError.
+- Nonexistent log directory -> create if possible; bubble up OSError otherwise.
+- File open errors bubble up (visibility is preferred over silent failure).
+- Thread/process safe for normal usage (CPython logging lock).
+
+Examples
+--------
+log = get_logger("pipeline", level="INFO", log_file="logs/pipeline.log")
+log.info("Start step A")
+
+Notes
+-----
+- When checking for duplicate handlers, guard with `if not logger.handlers:`
+  before attaching new ones, or de-duplicate by handler type+target.
+- Keep a small, consistent format string across the project for greppability.

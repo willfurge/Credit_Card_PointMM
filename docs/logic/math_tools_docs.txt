@@ -1,0 +1,81 @@
+MATH_TOOLS.PY — LOGIC & TEST DOCS (TEXT)
+
+Purpose
+-------
+Numerical utilities for financial math and small robust helpers used across the project.
+
+Public API (intended)
+---------------------
+from typing import Sequence, Union
+import numpy as np
+from numpy.typing import NDArray
+
+safe_divide(a: float, b: float, *, default: float = 0.0) -> float
+discount_factor(rate: float, n: int | float | NDArray[np.integer | np.floating]) -> float | NDArray[np.floating]
+npv(rate: float, cashflows: Sequence[float]) -> float
+irr(cashflows: Sequence[float], *, guess: float = 0.1, tol: float = 1e-7, maxiter: int = 100) -> float
+percentile(arr: NDArray[np.floating], q: float | Sequence[float], *, method: str = "linear") -> float | NDArray[np.floating]
+
+Behavior
+--------
+- safe_divide: return a / b; if b == 0, return `default` (no exception).
+- discount_factor: compute (1 + rate) ** (-n); supports scalar or vector `n`.
+- npv: Σ_t cashflows[t] / (1 + rate)^t.
+- irr:
+  - Solve npv(rate, cashflows) = 0 using Newton or hybrid with bisection.
+  - Require sign change in cashflows (min(cf) < 0 < max(cf)); else ValueError.
+  - Stop at `tol` or raise RuntimeError if not converged within `maxiter`.
+- percentile: thin wrapper on numpy.percentile using keyword `method` (NumPy >= 1.22);
+  if supporting older NumPy, fallback to `interpolation` keyword.
+
+Edge Cases & Guarantees
+-----------------------
+- safe_divide handles negative/float operands; default may be inf or 0.0 as chosen.
+- discount_factor: n=0 -> 1.0 by definition.
+- npv: for rate == 0, returns sum(cashflows).
+- irr: validates sign change early; gives clear exceptions on non-convergence.
+- percentile: use keyword form to satisfy typing stubs; method="linear" by default.
+
+Examples
+--------
+safe_divide(10, 0, default=float("inf"))  -> inf
+discount_factor(0.05, np.array([0, 1, 2])) -> array([1.0, 0.952..., 0.907...])
+npv(0.10, [-100, 30, 40, 50])             -> ~1.355
+irr([-100, 60, 60])                        -> ~0.118
+percentile(np.array([1.,2.,3.]), 50, method="linear") -> 2.0
+
+Test Plan
+---------
+Unit Test Matrix:
+- safe_divide:
+  - normal divide -> exact quotient
+  - divide by zero with default -> returns default
+  - negative/float operands -> correct sign/precision
+- discount_factor:
+  - scalar n -> (1+r)^(-n)
+  - vector n -> vectorized equality
+  - n=0 -> 1.0
+- npv:
+  - small stream -> equals definition sum
+  - zero rate -> sum of cashflows
+  - negative rate -> matches definition
+- irr:
+  - sign-changing cashflows -> root in a reasonable range (e.g., -1 < r < 10 for normal data)
+  - all positive or all negative -> ValueError
+  - tough convergence (flat) -> converges or RuntimeError with informative message
+- percentile:
+  - scalar q (50) -> median
+  - vector q ([5,50,95]) -> array result; non-decreasing
+  - keyword `method=` path -> no mypy errors; runtime correct
+
+Suggested Test Files:
+- tests/test_math_tools.py (core)
+- tests/test_math_tools_hardening.py (edge cases & stability)
+
+Static/Typing Notes
+-------------------
+- Prefer: from numpy.typing import NDArray.
+- Forward to numpy.percentile with keyword args:
+    np.percentile(a, q, method="linear")  # NumPy >= 1.22
+  For older NumPy, use: interpolation="linear".
+- Consider pinning numpy>=1.24 for consistent type stubs across dev machines.

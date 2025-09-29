@@ -1,20 +1,24 @@
-[tool.black]
-line-length = 100
-target-version = ["py311","py312","py313"]
-extend-exclude = "data|.venv|build|dist"
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
 
-[tool.isort]
-profile = "black"
-line_length = 100
-src_paths = ["src", "tests"]
+[project]
+name = "credit-card-points-mm"
+version = "0.1.0"
+description = "Market maker for credit card points (simulation + controller)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
 
-[tool.flake8]
-max-line-length = 100
-extend-ignore = ["E203", "W503"]
-exclude = [".venv", "data", "build", "dist", "__pycache__", ".git"]
+[project.scripts]
+market-maker = "src.market_maker.__main__:main"
 
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = "-q --disable-warnings --maxfail=1"
-testpaths = ["tests"]
-pythonpath = ["."]
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
+pretty = true
